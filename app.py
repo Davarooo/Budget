@@ -33,6 +33,7 @@ def init_db():
 
 init_db()
 
+# Ruta principal protegida
 @app.route('/')
 def index():
     if 'usuario_id' not in session:
@@ -54,8 +55,13 @@ def index():
                            total_ingresos=total_ingresos, total_egresos=total_egresos,
                            balance=balance)
 
+# Ruta de login
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    # Si ya está logueado, redirigir
+    if 'usuario_id' in session:
+        return redirect(url_for('index'))
+
     if request.method == 'POST':
         correo = request.form.get('correo')
         contrasena = request.form.get('contrasena')
@@ -73,8 +79,13 @@ def login():
             return render_template('login.html', error='Credenciales incorrectas')
     return render_template('login.html')
 
+# Ruta de registro
 @app.route('/register', methods=['GET', 'POST'])
 def registro():
+    # Si ya está logueado, redirigir
+    if 'usuario_id' in session:
+        return redirect(url_for('index'))
+
     if request.method == 'POST':
         correo = request.form.get('nuevo_correo')
         contrasena = request.form.get('nueva_contrasena')
@@ -92,11 +103,13 @@ def registro():
 
     return render_template('register.html')
 
+# Logout
 @app.route('/logout')
 def logout():
     session.pop('usuario_id', None)
     return redirect(url_for('login'))
 
+# Agregar movimiento (protegido)
 @app.route('/agregar', methods=['POST'])
 def agregar():
     if 'usuario_id' not in session:
